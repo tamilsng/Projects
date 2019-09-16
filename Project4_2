@@ -1,0 +1,88 @@
+Ansible DOCKER Server
+
+cd /opt/
+
+mkdir playbooks
+
+chmod 777 playbooks
+
+vi sample.yml
+=----------------------------------------------------
+
+sample.yml
+
+---
+  - hosts: all_hosts
+    become: true
+    tasks:        
+     - name: create docker image
+       shell: docker run -d --name tamil_test -p 8090:8080 tamil/tamil_test
+
+------------------------------------------------------------------
+
+jenkins 
+
+1. Write a yml file to create a container (file name : sample.yml)
+---
+  - hosts: all
+    become: true
+    tasks:
+     - name: stop previous version docker
+       shell: docker stop tamil_test
+     - name: remove stopped container
+       shell: docker rm -f tamil_test	  
+     - name: remove docker images
+       shell: docker image rm -f tamil/tamil_test
+       
+     - name: create docker image
+       shell: docker run -d --name tamil_test -p 8090:8080 tamil/tamil_test
+
+
+
+2. Add this script to Jenkins job.
+	○ Chose "configure" to modify your jenkins job.
+		§ Under post build actions
+			□ Send files or execute commands over SSH
+				® Exec Command:
+   cd /opt/playbooks
+   ansible-playbook create_docker_container.yml
+3. Execute Jenkins job.
+4. You could see a new container on your docker host. can able access it from browser on port 8090
+Troubleshooting: Makesure you have opened required ports on AWS Security group for this server.
+In Part-03 we try to improvise to store docker images previous versions
+
+Pasted from <https://github.com/ValaxyTech/DevOpsDemos/blob/master/SimpeDevOpsProjects/Project-4.MD> 
+
+
+part 3
+
+Jenkins
+
+cd /opt/docker
+docker build -t $JOB_NAME:v1.$BUILD_ID .
+docker tag $JOB_NAME:v1.$BUILD_ID tamil/$JOB_NAME:v1.$BUILD_ID
+docker tag $JOB_NAME:v1.$BUILD_ID tamil/$JOB_NAME:latest
+docker push tamil/$JOB_NAME:v1.$BUILD_ID
+docker push tamil/$JOB_NAME:latest
+docker rmi $JOB_NAME:v1.$BUILD_ID tamil/$JOB_NAME:v1.$BUILD_ID tamil/$JOB_NAME:latest
+
+
+Ansible playbooks
+
+---
+  - hosts: all
+    become: true
+    tasks:
+     - name: stop previous version docker
+       shell: docker stop tamil_test
+     - name: remove stopped container
+       shell: docker rm -f tamil_test
+     - name: remove docker images
+       shell: docker image rm -f tamil/docker_project_5:latest
+
+     - name: create docker image
+       shell: docker run -d --name tamil_test -p 8090:8080 tamil/docker_project_5:latest
+
+
+
+
