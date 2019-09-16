@@ -1,0 +1,117 @@
+REQ - 1 Jenkins,Maven
+ 2 - Amazon linux
+
+--------------------------------------------------------
+
+Ansible DOCKER Server
+
+sudo pip install ansible
+
+pip install --upgrade pip
+
+ansible --version
+
+useradd ansadmin
+
+passwd ansadmin
+
+visudo
+
+cd /etc/ansible/
+
+vi hosts
+
+cd /etc/ssh/
+
+vi sshd_config
+
+vi ssh_config
+
+service sshd restart
+
+DOCKER Installation
+
+yum install docker -y
+
+service docker start
+
+usermod -aG docker ansadmin
+
+mkdir /opt/docker/
+
+chown -R ansadmin:ansadmin /opt/docker/
+
+su - ansadmin
+
+docker login
+
+docker ps -a
+
+docker images 
+
+------------------------------------------------------
+
+Ansadmin (both node and client)
+
+ ssh-keygen
+ ssh-copy-id 172.31.16.115
+ ssh 172.31.16.115
+ exit
+ ansible all -m ping
+
+--------------------------------------------
+
+DOCKER Client
+
+useradd ansadmin
+
+passwd ansadmin
+
+visudo
+
+cd /etc/ssh/
+
+vi sshd_config
+
+vi ssh_config
+
+service sshd restart
+
+DOCKER Installation
+
+yum install docker -y
+
+service docker start
+
+usermod -aG docker ansadmin
+
+-------------------------------------------------------------------
+
+Jenkins
+
+Create Jenkins job, Fill the following details,
+	• Source Code Management:
+		? Repository : https://github.com/tamilsng/hello-world.git
+		? Branches to build : */master
+	• Build:
+		? Root POM:pom.xml
+		? Goals and options : clean install package
+	• Post Steps
+		? Send files or execute commands over SSH
+			§ Name: ansible_server
+			§ Source files : webapp/target/*.war
+			§ Remove prefix : webapp/target
+			§ Remote directory : //opt//docker
+		? Send files or execute commands over SSH
+			§ Name: ansible_server
+			§ Source files : Dockerfile
+			§ Remote directory : //opt//docker
+			§ Exec Command:
+				cd /opt/docker
+				docker build -t tamil_test .
+				docker tag tamil_test tamil/tamil_test
+				docker push tamil/tamil_test
+				docker rmi tamil_test tamil/tamil_test
+				
+
+Pasted from <https://github.com/ValaxyTech/DevOpsDemos/blob/master/SimpeDevOpsProjects/Project-4.MD> 
